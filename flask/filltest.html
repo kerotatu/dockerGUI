@@ -1,0 +1,147 @@
+ <html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  </head>
+  <body>
+ <div id="container">
+    
+      <svg width="1000px" height="1000px" @click.left="append">
+        <circle v-for="(circle,index) in circles":cx="circle.cx" :cy="circle.cy" :r="circle.r" :stroke="circle.stroke"fill="white" stroke-width="5" @click.right.prevent="remove(index)" @click.stop.left="drawLine(index)"/>
+        <text v-for="(circle,index) in circles":x="circle.cx"  :y="circle.cy+circle.r-30 ":length="2">{{index}}</text><!--y=-15が黒塗りの時のベスト-->
+       <!-- <line v-for="line in lines":x1="line.x1":x2="line.x2":y1="line.y1":y2="line.y2"stroke="black"/> -->
+       <line v-for="line in lines":x1="line.x1+50":x2="line.x2-50":y1="line.y1":y2="line.y2"stroke="black"/>
+      </svg>    
+      <button @click="dlCSV">
+        ダウンロード
+      </button>
+      <button @click="postTest">送信</button>
+  </div>
+<script>
+   new Vue({
+    el : "#container",
+    data() {
+      return {
+        num:1,
+        firstClick:true,
+        clickedCircle:-1,
+        changeIndex:0,
+        lineIndex:0,
+        id:0,
+        tmpx:0,
+        tmpy:0,
+        circles : [
+           {cx:0, cy:0, r:0,id:0,stroke:"black"}
+        ],
+        lines :[
+          {x1:0, x2:0, y1:0, y2:0, pathLength:0,from:0 ,to:0}
+        ],
+        containers:[
+          {id:0 ,name:""}
+        ],
+        relation:[
+          {from:"" ,to:"" ,num:0}
+        ],
+      }
+    },
+    methods: {
+      append:function(e){
+        
+        this.circles.push({
+          cx : e.offsetX,
+          cy : e.offsetY,
+          r  : 50,
+          id : this.num++,
+          stroke:"black"
+        });
+      },
+      remove:function(index){
+        let dlIndex
+
+        this.circles.splice(index,1)
+        while(dlIndex!=-1){
+          dlIndex=this.lines.findIndex(({ to }) => to === index)
+          if(dlIndex==-1){
+            break
+          }
+          this.lines.splice(dlIndex,1)
+          dlIndex=this.relation.findIndex(({ to }) => to === index)
+          this.relation.splice(dlIndex,1)
+          this.lineIndex--
+        }
+        dlIndex=0
+        while(dlIndex!=-1){
+          dlIndex=this.lines.findIndex(({ from }) => from === index)
+          if(dlIndex==-1){
+            break
+          }
+          this.lines.splice(dlIndex,1)
+          dlIndex=this.relation.findIndex(({ from }) => from === index)
+          this.relation.splice(dlIndex,1)
+          this.lineIndex--
+        }
+
+
+        console.log(index)
+      },
+      drawLine:function(circleIndex){
+        if(this.firstClick){
+        this.circles[circleIndex]["stroke"]="blue"
+        this.relation.push({
+          from:circleIndex,
+          to:null,
+          num:null
+        }
+        
+        )
+        console.log("push")
+        this.tmpx=this.circles[circleIndex]["cx"]
+        this.tmpy=this.circles[circleIndex]["cy"]
+        this.firstClick=false
+        this.clickedCircle=circleIndex
+      }else{
+        this.relation[this.lineIndex+1]["to"]=circleIndex
+        this.lines.push({
+          x1:this.tmpx,
+          x2:this.circles[circleIndex]["cx"],
+          y1:this.tmpy,
+          y2:this.tmpy=this.circles[circleIndex]["cy"],
+          from:this.clickedCircle,
+          to:circleIndex
+        })
+        this.firstClick=true
+        this.lineIndex++
+        this.circles[this.clickedCircle]["stroke"]="black"
+        console.log("a")
+        
+      }
+
+      },
+      dlCSV () {
+      var csv = '\ufeff' + 'from,to\n'
+      this.relation.forEach(el => {
+        var line = el['from'] + ',' + el['to'] + '\n'
+        csv += line
+      })
+      let blob = new Blob([csv], { type: 'text/csv' })
+      let link = document.createElement('a')
+      link.href = window.URL.createObjectURL(blob)
+      link.download = 'Result.csv'
+      link.click()
+    },
+    postTest: function(){
+            //console.log("aaaa")
+           // console.log(this.relation[1]["to"])
+            axios.post('http://127.0.0.1:12345/postTest',this.relation)
+           .then(function (response) {
+            console.log(response);
+            })
+            .catch(function (error) {
+             console.log(error);
+  });
+          },
+    }
+   });
+   </script>
+   </body>
+   </html>
