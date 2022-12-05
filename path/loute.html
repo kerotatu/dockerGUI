@@ -1,0 +1,17 @@
+<div id="app">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <svg viewbox="0 0 300 300" width="1000" height="1000">
+      <circle @mousedown="foo" cx="10" cy="10" r="10"  />
+    </svg>
+    <div>
+      <input type="range" v-model="x1">
+    </div>
+  </div>
+  <script>
+    new Vue({
+      el: "#app",
+      data: {
+        x1: 100
+      }
+    })
+  </script>

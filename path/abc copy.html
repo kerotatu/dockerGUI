@@ -1,0 +1,41 @@
+<div id="container">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <svg width="1000px" height="1000px" @click.left="append" >
+      <circle v-for="(circle,index) in circles":cx="circle.cx" :cy="circle.cy" :r="circle.r" @click.right.prevent="remove(index)"/>
+    </svg>
+</div>
+   <script>
+   new Vue({
+    el : "#container",
+    data() {
+      return {
+        circles : [
+          // {cx:0, cy:0, r:0}
+        ],
+        lines :[
+          {x1:0, x2:0, y1:0, y2:0, pathLength:0}
+        ],
+        containers:[
+          {id:0 ,name:""}
+        ],
+        relation:[
+          {from:"" ,to:"" ,num:0}
+        ],
+      }
+    },
+    methods: {
+      append:function(e){
+        
+        this.circles.push({
+          cx : e.offsetX,
+          cy : e.offsetY,
+          r  : 50,
+
+        });
+      },
+      remove:function(index){
+        this.circles.splice(index,1)
+      },
+    }
+   });
+   </script>

@@ -1,0 +1,34 @@
+<div id="container">
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <button v-on:click="downloadCSV">
+    ダウンロード
+  </button>  
+</div>
+ <script>
+ new Vue({
+  el : "#container",
+  data() {
+    return {
+      items: [
+   { name: 'りんご', price: '100' },
+  { name: 'みかん', price: '50' },
+  { name: 'マンゴー', price: '3000' }
+]
+    }
+  },
+  methods: {
+    downloadCSV () {
+      var csv = '\ufeff' + '品名,価格\n'
+      this.items.forEach(el => {
+        var line = el['name'] + ',' + el['price'] + '\n'
+        csv += line
+      })
+      let blob = new Blob([csv], { type: 'text/csv' })
+      let link = document.createElement('a')
+      link.href = window.URL.createObjectURL(blob)
+      link.download = 'Result.csv'
+      link.click()
+    }
+  }
+ });
+ </script>

@@ -1,0 +1,25 @@
+<div id="container">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <svg width="1000px" height="1000px" v-on:click="append">
+      <circle v-for="circle in list_circle" :cx="circle.cx" :cy="circle.cy" :r="circle.r"/>
+    </svg>
+   </div>
+   <script>
+   new Vue({
+    el : "#container",
+    data:{
+      list_circle : [
+        // {cx:0, cy:0, r:0}
+      ],
+    },
+    methods: {
+      append:function(e){
+        this.list_circle.push({
+          cx : e.offsetX,
+          cy : e.offsetY,
+          r  : 50,
+        });
+      },
+    }
+   });
+   </script>

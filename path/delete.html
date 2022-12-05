@@ -1,0 +1,66 @@
+<div id="container">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <svg width="1000px" height="1000px" @click.left="append" >
+      <circle v-for="(circle,index) in circles":cx="circle.cx" :cy="circle.cy" :r="circle.r" @click.right.prevent="remove(index)" @click.left="drawLine(index)"/>
+
+    </svg>
+      
+</div>
+   <script>
+   new Vue({
+    el : "#container",
+    data() {
+      return {
+        num:0,
+        lineFlag:0,
+        clickedCircle:-1,
+        changeIndex:0,
+        lineIndex:0,
+        circles : [
+           {cx:0, cy:0, r:0,id:-1}
+        ],
+        lines :[
+          {x1:0, x2:0, y1:0, y2:0, pathLength:0}
+        ],
+        containers:[
+          {id:0 ,name:""}
+        ],
+        relation:[
+          {from:"" ,to:"" ,num:0}
+        ],
+      }
+    },
+    methods: {
+      append:function(e){
+        
+        this.circles.push({
+          cx : e.offsetX,
+          cy : e.offsetY,
+          r  : 50,
+          id : this.num++
+        });
+      },
+      remove:function(index){
+        this.circles.splice(index,1)
+      },
+      drawLine:function(circleIndex){
+        if(this.lineFlag==0){
+        this.relation.push({
+          from:circleIndex,
+          to:null,
+          num:null
+        }
+        
+        )
+        this.lineFlag=1
+        this.clickedCircle=circleIndex
+      }else{
+        this.relation.splice(this.lineIndex,1,123)
+        this.lineFlag=0
+        lineIndex++
+        console.log("a")
+      }
+      }
+    }
+   });
+   </script>

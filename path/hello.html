@@ -1,0 +1,18 @@
+<div id="app">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <svg viewbox="0 0 300 300" width="300" height="300">
+      <line :x1="x1" y1=100 :x2="x1" y2=200 stroke="black"></line>
+    </svg>
+    <p>range is {{x1}}</p>
+    <div>
+      <input type="range" v-model="x1">
+    </div>
+  </div>
+  <script>
+    new Vue({
+      el: "#app",
+      data: {
+        x1: 100
+      }
+    })
+  </script>

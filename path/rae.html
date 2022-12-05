@@ -1,0 +1,4 @@
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<svg @mousemove="touchmove($event)" @mouseup="touchend($event)" @mouseleave="touchend($event)">
+    <line v-for="line in list_line" @mousedown="touchstart($event)" :x1="line.x1" :y1="line.y1" :x2="line.x2" :y2="line.y2" :stroke-width="line.width" :stroke="line.stroke"/>
+   </svg>
