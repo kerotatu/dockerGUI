@@ -15,7 +15,6 @@
         <circle v-for="(circle,index) in circles":cx="circle.cx" :cy="circle.cy" :r="circle.r" :stroke="circle.stroke" stroke-width="5" @click.right.prevent="remove(index)" @click.stop.left="drawLine(index)"/>
         <text v-for="(circle,index) in circles":x="circle.cx"  :y="circle.cy+circle.r+15 ":length="2">{{circle.id}}</text>
         <line v-for="line in lines":x1="line.x1":x2="line.x2":y1="line.y1":y2="line.y2"stroke="black"/>
-        
       </svg>    
       <button @click="dlCSV">
         ダウンロード

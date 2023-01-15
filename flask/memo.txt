@@ -1,0 +1,14 @@
+<foreignObject pointer-events="none" width="100%" height="100%" style="overflow: visible; text-align: left;">
+          <div style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 1101px; margin-left: 728px;">
+            <div data-drawio-colors="color: rgb(0, 0, 0); " style="box-sizing: border-box; font-size: 0px; text-align: center;">
+              <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: all; white-space: nowrap;">aiu</div>
+            </div>
+          </div>
+</foreignObject>
+
+
+<div >
+              折り返しさせたい文章折り返しさせたい文章折り返しさせたい文章折り返しさせたい文章折り返しさせたい文章折り返しさせたい文章
+          </div>
+
+          position:absolute;right :0; top: 0"
