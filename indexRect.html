@@ -11,10 +11,9 @@
           <input v-for="line in lines"  v-model.number="line.value":style="{position:'absolute',left:(line.x1+line.x2)/2,top:(line.y1+line.y2)/2}"class="example"@click.stop @input="addValue(line.value,line)">
         </foreignObject>
         <!--<svg style="left: 0px; top: 0px; width: 100%; height: 100%; display: block; min-width: 1367px; min-height: 2005px; position: absolute; background-image: none;">-->
-          <line v-for="line in lines":x1="line.x1":x2="line.x2":y1="line.y1":y2="line.y2"stroke="black"/>
-        <circle v-for="(circle,index) in circles":cx="circle.cx" :cy="circle.cy" :r="circle.r" :stroke="circle.stroke" stroke-width="5" fill="white"@click.right.prevent="remove(index)" @click.stop.left="drawLine(index)"/>
-        
-        <text v-for="(circle,index) in circles":x="circle.cx"  :y="circle.cy+circle.r+15 ":length="2">{{circle.id}}</text>
+          <line v-for="line in lines":x1="line.x1+35":x2="line.x2+35":y1="line.y1+25":y2="line.y2+25"stroke="black"/>
+        <rect v-for="(rect,index) in rects":x="rect.x" :y="rect.y" :width="rect.width":height="rect.height" :stroke="rect.stroke" stroke-width="5" fill="white" rx="5" ry="5"@click.right.prevent="remove(index)" @click.stop.left="drawLine(index)"/>
+        <text v-for="(rect,index) in rects":x="rect.x+28"  :y="rect.y+rect.height-20 ":length="2"@click.stop>{{rect.id}}</text>
         
        <!-- <line v-for="line in lines":x1="line.x1":x2="line.x2":y1="line.y1":y2="line.y2"stroke="black"/> -->
        
@@ -41,8 +40,8 @@
         tmpx:0,
         tmpy:0,
         value:0,
-        circles : [
-           {cx:0, cy:0, r:0,id:0,stroke:"black"}
+        rects : [
+           {x:0, y:0, width:0,height:0,id:0,stroke:"black"}
         ],
         lines :[
           {x1:0, x2:0, y1:0, y2:0, pathLength:0,from:0 ,to:0,value:0}
@@ -57,19 +56,18 @@
     },
     methods: {
       append:function(e){
-        
-        this.circles.push({
-          cx : e.offsetX,
-          cy : e.offsetY,
-          r  : 50,
+        this.rects.push({
+          x : e.offsetX,
+          y : e.offsetY,
+          width  : 70,
+          height : 50,
           id : this.num++,
           stroke:"black"
         });
       },
       remove:function(index){
         let dlIndex
-
-        this.circles.splice(index,1)
+        this.rects.splice(index,1)
         while(dlIndex!=-1){
           dlIndex=this.lines.findIndex(({ to }) => to === index)
           if(dlIndex==-1){
@@ -97,7 +95,7 @@
       },
       drawLine:function(circleIndex){
         if(this.firstClick){
-        this.circles[circleIndex]["stroke"]="blue"
+        this.rects[circleIndex]["stroke"]="blue"
         this.relation.push({
           from:circleIndex,
           to:null,
@@ -106,24 +104,24 @@
         
         )
         console.log("push")
-        this.tmpx=this.circles[circleIndex]["cx"]
-        this.tmpy=this.circles[circleIndex]["cy"]
+        this.tmpx=this.rects[circleIndex]["x"]
+        this.tmpy=this.rects[circleIndex]["y"]
         this.firstClick=false
         this.clickedCircle=circleIndex
       }else{
         this.relation[this.lineIndex+1]["to"]=circleIndex
         this.lines.push({
           x1:this.tmpx,
-          x2:this.circles[circleIndex]["cx"],
+          x2:this.rects[circleIndex]["x"],
           y1:this.tmpy,
-          y2:this.tmpy=this.circles[circleIndex]["cy"],
+          y2:this.tmpy=this.rects[circleIndex]["y"],
           from:this.clickedCircle,
           to:circleIndex,
           value:this.value
         })
         this.firstClick=true
         this.lineIndex++
-        this.circles[this.clickedCircle]["stroke"]="black"
+        this.rects[this.clickedCircle]["stroke"]="black"
         console.log("a")
         
       }
