@@ -1,6 +1,6 @@
  <html>
   <head>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue-context-menu@2.0.6/vue-context-menu.min.js"></script>
   </head>
@@ -14,6 +14,7 @@
         <line v-for="network in networks":x1="network.x1":x2="network.x2":y1="network.y1":y2="network.y2"stroke="red"/>
         <circle v-for="(bridge,index) in bridges":cx="bridge.cx" :cy="bridge.cy" :r="bridge.r" :stroke="bridge.stroke" stroke-width="5" fill="white"@click.right.stop.prevent="removeBridge(index)" @click.stop.left="drawLine(index,$event)"/>
         <line v-for="line in lines":x1="line.x1+35":x2="line.x2+35":y1="line.y1+25":y2="line.y2+25"stroke="black"/>
+        
         <rect v-for="(rect,index) in containers":x="rect.x" :y="rect.y" :width="rect.width":height="rect.height" :stroke="rect.stroke" stroke-width="5" fill="white" rx="5" ry="5"@click.right.stop.prevent="remove(index)" @click.stop.left="drawLine(index,$event)"/>
         <text v-for="(rect,index) in containers":x="rect.x+28"  :y="rect.y+rect.height-20 ":length="2"@click.stop>{{rect.id}}</text>     
       </svg>    
@@ -25,8 +26,8 @@
 </body>
 </html>
 <script>
-  const { createApp } = Vue
-   createApp({
+   new Vue({
+    el : "#container",
     data() {
       return {
         cNum:1,
@@ -81,34 +82,10 @@
       },
       remove:function(index){
         let dlIndex=0
-        //this.containers.splice(index,1)
-        this.containers[index]={
-          x:0,
-          y:0, 
-          width:0,
-          height:0,
-          id:-1,
-          stroke:"white"
-        }
-        //this.containers[index] = Object.assign({}, this.containers[index], 
-
-        //var job=
-        //{ 
-          //x:0,
-          //y:0, 
-          //width:0,
-          //height:0,
-          //id:-1,
-          //stroke:"white"
-        //}
-        //this.$set(this.containers[index],'x',0)
-        //this.$set(this.containers[index],'y',0)
-        //this.$set(this.containers[index],'width',0)
-        //this.$set(this.containers[index],'height',0)
-        //this.$set(this.containers[index],'id',-1)
-        //this.$set(this.containers[index],'stroke',"white")
+        this.containers.splice(index,1)
         while(dlIndex!=-1){
           dlIndex=this.lines.findIndex(({ to }) => to === index)
+          
           if(dlIndex==-1){
             break
           }
@@ -120,7 +97,7 @@
         dlIndex=0
         while(dlIndex!=-1){
           dlIndex=this.lines.findIndex(({ from }) => from === index)
-          
+          console.log("dl="+dlIndex+"index="+index)
           if(dlIndex==-1){
             break
           }
@@ -132,7 +109,7 @@
         console.log(index)
       },
       removeBridge:function(index){
-        let dlIndex=0
+        let dlIndex
         this.bridges.splice(index,1)
         while(dlIndex!=-1){
           dlIndex=this.networks.findIndex(({ container }) => container === index)
@@ -146,13 +123,12 @@
         }
         dlIndex=0
         while(dlIndex!=-1){
-          console.log("dl="+dlIndex+"index="+index)
-          dlIndex=this.networks.findIndex(({ bridge }) => bridge === index)
+          dlIndex=this.lines.findIndex(({ from }) => from === index)
           if(dlIndex==-1){
             break
           }
           this.networks.splice(dlIndex,1)
-          //dlIndex=this.relation.findIndex(({ bridge }) => bridge === index)
+          dlIndex=this.relation.findIndex(({ from }) => from === index)
           this.relation.splice(dlIndex,1)
           this.networkIndex--
         }
@@ -262,24 +238,19 @@
       link.click()
     },
     postTest: function(){
-
-      axios.post('http://127.0.0.1:12345/postNetworks',this.networks)
-      .then(function (response) {
-        console.log(response);
-      }).catch(function (error) {
-          console.log(error);
-      });
-
-      axios.post('http://127.0.0.1:12345/postLines',this.lines)
-      .then(function (response) {
-        console.log(response);
-      }).catch(function (error) {
-          console.log(error);
-      });
-      
-    },
-   }
-   }).mount("#container")
+            //console.log("aaaa")
+           // console.log(this.relation[1]["to"])
+            axios.post('http://127.0.0.1:12345/postTest',this.lines)
+           .then(function (response) {
+            console.log(response);
+            })
+            .catch(function (error) {
+             console.log(error);
+            });
+          },
+    
+      }
+   });
    </script>
  <style> 
   .example{

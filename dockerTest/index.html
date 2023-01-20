@@ -1,4 +1,4 @@
- <html>
+<html>
   <head>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
@@ -42,11 +42,12 @@
         tmpy:0,
         value:0,
         clickedBridge:-1,
+        dlCnt:0,
         containers : [
            {x:0, y:0, width:0,height:0,id:0,stroke:"black"}
         ],
         lines :[
-          {x1:0, x2:0, y1:0, y2:0, pathLength:0,from:0 ,to:0,value:0}
+          {x1:0, x2:0, y1:0, y2:0, pathLength:0,from:0 ,to:0,value:0,dl:0}
         ],
         bridges : [
            {cx:0, cy:0, r:0,id:0,stroke:"black"}
@@ -90,6 +91,8 @@
           id:-1,
           stroke:"white"
         }
+        this.dlCnt++
+        this.lines[0]["dl"]=this.dlCnt
         //this.containers[index] = Object.assign({}, this.containers[index], 
 
         //var job=
@@ -113,6 +116,8 @@
             break
           }
           this.lines.splice(dlIndex,1)
+          
+          
           dlIndex=this.relation.findIndex(({ to }) => to === index)
           this.relation.splice(dlIndex,1)
           this.lineIndex--
@@ -125,16 +130,31 @@
             break
           }
           this.lines.splice(dlIndex,1)
+          this.lines[0]["dl"]=this.dlCnt
           dlIndex=this.relation.findIndex(({ from }) => from === index)
           this.relation.splice(dlIndex,1)
           this.lineIndex--
         }
+        dlIndex=0
+        while(dlIndex!=-1){
+          console.log("dl="+dlIndex+"index="+index)
+          dlIndex=this.networks.findIndex(({ container }) => container === index)
+          if(dlIndex==-1){
+            break
+          }
+          this.networks.splice(dlIndex,1)
+          //dlIndex=this.relation.findIndex(({ container }) => container === index)
+          //this.relation.splice(dlIndex,1)
+          this.networkIndex--
+        }
+
         console.log(index)
       },
       removeBridge:function(index){
         let dlIndex=0
         this.bridges.splice(index,1)
         while(dlIndex!=-1){
+          console.log("dl="+dlIndex+"index="+index)
           dlIndex=this.networks.findIndex(({ container }) => container === index)
           if(dlIndex==-1){
             break

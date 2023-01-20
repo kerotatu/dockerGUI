@@ -1,4 +1,4 @@
- <html>
+<html>
   <head>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
@@ -46,7 +46,7 @@
            {x:0, y:0, width:0,height:0,id:0,stroke:"black"}
         ],
         lines :[
-          {x1:0, x2:0, y1:0, y2:0, pathLength:0,from:0 ,to:0,value:0}
+          {x1:0, x2:0, y1:0, y2:0, pathLength:0,from:0 ,to:0,value:0,network:0}
         ],
         bridges : [
            {cx:0, cy:0, r:0,id:0,stroke:"black"}
@@ -159,6 +159,7 @@
       },
       drawLine:function(clickedIndex,event){
         let clickedTag=event.target.tagName;
+        let changeIndex;
         console.log(clickedTag);
         if(clickedTag=="circle" || this.preClickedTag=="circle"){
           if(this.firstClick){
@@ -187,6 +188,24 @@
                   value:null
                 }
               )
+              changeIndex=0
+              while(changeIndex!=-1){
+                changeIndex=this.lines.findIndex(({ from }) => from === container)
+                if(changeIndex==-1){
+                  break
+                }
+                this.lines[changeIndex]["network"]=preClickedIndex
+              }
+              changeIndex=0
+              while(changeIndex!=-1){
+                changeIndex=this.lines.findIndex(({ to }) => to === container)
+                if(changeIndex==-1){
+                  break
+                }
+                this.lines[changeIndex]["network"]=preClickedIndex
+              }
+
+
               this.networkIndex++
               this.bridges[this.preClickedIndex]["stroke"]="black"
             }else{
@@ -200,6 +219,23 @@
                 container:this.preClickedIndex,
                 value:null
               })
+              changeIndex=0
+              while(changeIndex!=-1){
+                changeIndex=this.lines.findIndex(({ from }) => from === container)
+                if(changeIndex==-1){
+                  break
+                }
+                this.lines[changeIndex]["network"]=preClickedIndex
+              }
+              changeIndex=0
+              while(changeIndex!=-1){
+                changeIndex=this.lines.findIndex(({ to }) => to === container)
+                if(changeIndex==-1){
+                  break
+                }
+                this.lines[changeIndex]["network"]=preClickedIndex
+              }
+
               this.containers[this.preClickedIndex]["stroke"]="black"
               this.networkIndex++
             }
@@ -234,7 +270,8 @@
           y2:this.tmpy=this.containers[clickedIndex]["y"],
           from:this.preClickedIndex,
           to:clickedIndex,
-          value:this.value
+          value:this.value,
+          network:0
         })
         this.firstClick=true
         this.lineIndex++

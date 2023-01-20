@@ -1,0 +1,171 @@
+ <html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  </head>
+  <body>
+ <div id="container">
+
+      <svg width="1000px" height="1000px"  background-image: none @click.left="append" >
+        <foreignObject width="1000" height="1000" x="0" y="0">
+          <input v-for="line in lines"  v-model.number="line.value":style="{position:'absolute',left:(line.x1+line.x2)/2,top:(line.y1+line.y2)/2}"class="example"@click.stop @input="addValue(line.value,line)">
+        </foreignObject>
+        <!--<svg style="left: 0px; top: 0px; width: 100%; height: 100%; display: block; min-width: 1367px; min-height: 2005px; position: absolute; background-image: none;">-->
+          <line v-for="line in lines":x1="line.x1":x2="line.x2":y1="line.y1":y2="line.y2"stroke="black"/>
+        <circle v-for="(circle,index) in circles":cx="circle.cx" :cy="circle.cy" :r="circle.r" :stroke="circle.stroke" stroke-width="5" fill="white"@click.right.prevent="remove(index)" @click.stop.left="drawLine(index)"/>
+        
+        <text v-for="(circle,index) in circles":x="circle.cx"  :y="circle.cy+circle.r+15 ":length="2">{{circle.id}}</text>
+        
+       <!-- <line v-for="line in lines":x1="line.x1":x2="line.x2":y1="line.y1":y2="line.y2"stroke="black"/> -->
+       
+      
+      </svg>    
+      <button @click="dlCSV">
+        ダウンロード
+      </button>
+      <button @click="postTest">送信</button>
+  </div>
+</body>
+</html>
+<script>
+   new Vue({
+    el : "#container",
+    data() {
+      return {
+        num:1,
+        firstClick:true,
+        clickedCircle:-1,
+        changeIndex:0,
+        lineIndex:0,
+        id:0,
+        tmpx:0,
+        tmpy:0,
+        value:0,
+        circles : [
+           {cx:0, cy:0, r:0,id:0,stroke:"black"}
+        ],
+        lines :[
+          {x1:0, x2:0, y1:0, y2:0, pathLength:0,from:0 ,to:0,value:0}
+        ],
+        containers:[
+          {id:0 ,name:""}
+        ],
+        relation:[
+          {from:"" ,to:"" ,value:0}
+        ],
+      }
+    },
+    methods: {
+      append:function(e){
+        
+        this.circles.push({
+          cx : e.offsetX,
+          cy : e.offsetY,
+          r  : 50,
+          id : this.num++,
+          stroke:"black"
+        });
+      },
+      remove:function(index){
+        let dlIndex
+
+        this.circles.splice(index,1)
+        while(dlIndex!=-1){
+          dlIndex=this.lines.findIndex(({ to }) => to === index)
+          if(dlIndex==-1){
+            break
+          }
+          this.lines.splice(dlIndex,1)
+          dlIndex=this.relation.findIndex(({ to }) => to === index)
+          this.relation.splice(dlIndex,1)
+          this.lineIndex--
+        }
+        dlIndex=0
+        while(dlIndex!=-1){
+          dlIndex=this.lines.findIndex(({ from }) => from === index)
+          if(dlIndex==-1){
+            break
+          }
+          this.lines.splice(dlIndex,1)
+          dlIndex=this.relation.findIndex(({ from }) => from === index)
+          this.relation.splice(dlIndex,1)
+          this.lineIndex--
+        }
+
+
+        console.log(index)
+      },
+      drawLine:function(circleIndex){
+        if(this.firstClick){
+        this.circles[circleIndex]["stroke"]="blue"
+        this.relation.push({
+          from:circleIndex,
+          to:null,
+          value:null
+        }
+        
+        )
+        console.log("push")
+        this.tmpx=this.circles[circleIndex]["cx"]
+        this.tmpy=this.circles[circleIndex]["cy"]
+        this.firstClick=false
+        this.clickedCircle=circleIndex
+      }else{
+        this.relation[this.lineIndex+1]["to"]=circleIndex
+        this.lines.push({
+          x1:this.tmpx,
+          x2:this.circles[circleIndex]["cx"],
+          y1:this.tmpy,
+          y2:this.tmpy=this.circles[circleIndex]["cy"],
+          from:this.clickedCircle,
+          to:circleIndex,
+          value:this.value
+        })
+        this.firstClick=true
+        this.lineIndex++
+        this.circles[this.clickedCircle]["stroke"]="black"
+        console.log("a")
+        
+      }
+
+      },
+      addValue: function(value,lines){
+        console.log(value);
+        console.log(this.value);
+        console.log(lines);
+      },
+      dlCSV () {
+      var csv = '\ufeff' + 'from,to\n'
+      this.relation.forEach(el => {
+        var line = el['from'] + ',' + el['to'] + '\n'
+        csv += line
+      })
+      let blob = new Blob([csv], { type: 'text/csv' })
+      let link = document.createElement('a')
+      link.href = window.URL.createObjectURL(blob)
+      link.download = 'Result.csv'
+      link.click()
+    },
+    postTest: function(){
+            //console.log("aaaa")
+           // console.log(this.relation[1]["to"])
+            axios.post('http://127.0.0.1:12345/postTest',this.lines)
+           .then(function (response) {
+            console.log(response);
+            })
+            .catch(function (error) {
+             console.log(error);
+            });
+          },
+    
+      }
+   });
+   </script>
+ <style> 
+  .example{
+     /*コレ*/width: 3em;
+    /*コレ*/max-width: 100%;
+    /*コレ*/border: none;
+    background: #e7edf8;
+}
+ </style>
