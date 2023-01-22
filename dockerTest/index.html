@@ -6,16 +6,17 @@
   </head>
   <body>
  <div id="container">
-
       <svg width="1000px" height="1000px"  background-image: none @click.left="append" @click.right.prevent="appendBridge">
         <foreignObject width="1000" height="1000" x="0" y="0">
-          <input v-for="line in lines"  v-model.cNumber="line.value":style="{position:'absolute',left:(line.x1+line.x2)/2,top:(line.y1+line.y2)/2}"class="example"@click.stop @input="addValue(line.value,line)">
+          <input v-for="line in lines"  v-model.cNumber="line.value" :type="line.visibility" :style="{position:'absolute',left:(line.x1+line.x2)/2,top:(line.y1+line.y2)/2}"class="example"@click.stop @input="addValue(line.value,line)">
         </foreignObject>
+        <text v-for="(line,index) in lines":x="(line.x1+line.x2)/2+40"  :y="(line.y1+line.y2)/2+13 ":length="2":visibility="line.visibility" @click.stop>ms</text> 
         <line v-for="network in networks":x1="network.x1":x2="network.x2":y1="network.y1":y2="network.y2"stroke="red"/>
         <circle v-for="(bridge,index) in bridges":cx="bridge.cx" :cy="bridge.cy" :r="bridge.r" :stroke="bridge.stroke" stroke-width="5" fill="white"@click.right.stop.prevent="removeBridge(index)" @click.stop.left="drawLine(index,$event)"/>
+        <text v-for="(bridge,index) in bridges":x="bridge.cx-35"  :y="bridge.cy+5 ":length="2":visibility="bridge.visibility"@click.stop>ブリッジ{{bridge.id}}</text> 
         <line v-for="line in lines":x1="line.x1+35":x2="line.x2+35":y1="line.y1+25":y2="line.y2+25"stroke="black"/>
         <rect v-for="(rect,index) in containers":x="rect.x" :y="rect.y" :width="rect.width":height="rect.height" :stroke="rect.stroke" stroke-width="5" fill="white" rx="5" ry="5"@click.right.stop.prevent="remove(index)" @click.stop.left="drawLine(index,$event)"/>
-        <text v-for="(rect,index) in containers":x="rect.x+28"  :y="rect.y+rect.height-20 ":length="2"@click.stop>{{rect.id}}</text>     
+        <text v-for="(rect,index) in containers":x="rect.x+2"  :y="rect.y+rect.height-20 ":length="2":visibility="rect.visibility" @click.stop>コンテナ{{rect.id}}</text>     
       </svg>    
       <button @click="dlCSV">
         ダウンロード
@@ -44,19 +45,19 @@
         clickedBridge:-1,
         dlCnt:0,
         containers : [
-           {x:0, y:0, width:0,height:0,id:0,stroke:"black"}
+           {x:0, y:0, width:0,height:0,id:0,stroke:"black",visibility:"hidden"}
         ],
         lines :[
-          {x1:0, x2:0, y1:0, y2:0, pathLength:0,from:0 ,to:0,value:0,dl:0}
+          {x1:0, x2:0, y1:0, y2:0, pathLength:0,from:0 ,to:0,value:0,dl:0,visibility:"hidden",display:"none"}
         ],
         bridges : [
-           {cx:0, cy:0, r:0,id:0,stroke:"black"}
+           {cx:0, cy:0, r:0,id:0,stroke:"black",visibility:"hidden"}
         ],
         relation:[
           {from:"" ,to:"" ,value:0}
         ],
         networks:[
-          {x1:0, x2:0, y1:0, y2:0, pathLength:0,bridge:0 ,container:0,value:0}
+          {x1:0, x2:0, y1:0, y2:0, pathLength:0,bridge:0 ,container:0,value:0,visibility:"hidden"}
         ],
       }
     },
@@ -65,17 +66,18 @@
         this.containers.push({
           x : e.offsetX,
           y : e.offsetY,
-          width  : 70,
+          width  : 80,
           height : 50,
           id : this.cNum++,
-          stroke:"black"
+          stroke:"black",
+          visibility:"visible"
         });
       },
       appendBridge:function(e){
         this.bridges.push({
           cx : e.offsetX,
           cy : e.offsetY,
-          r  : 30,
+          r  : 50,
           id : this.bNum++,
           stroke:"black"
         });
@@ -89,7 +91,8 @@
           width:0,
           height:0,
           id:-1,
-          stroke:"white"
+          stroke:"white",
+          visibility:"visible"
         }
         this.dlCnt++
         this.lines[0]["dl"]=this.dlCnt
@@ -204,7 +207,9 @@
                   y2:this.tmpy=this.containers[clickedIndex]["y"],
                   bridge:this.preClickedIndex,
                   container:clickedIndex,
-                  value:null
+                  value:null,
+                  visibility:"visible"
+
                 }
               )
               this.networkIndex++
@@ -254,7 +259,8 @@
           y2:this.tmpy=this.containers[clickedIndex]["y"],
           from:this.preClickedIndex,
           to:clickedIndex,
-          value:this.value
+          value:this.value,
+          visibility:"visible"
         })
         this.firstClick=true
         this.lineIndex++
