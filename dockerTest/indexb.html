@@ -8,9 +8,9 @@
  <div id="container">
       <svg width="1000px" height="1000px"  background-image: none @click.left="append" @click.right.prevent="appendBridge">
         <foreignObject width="1000" height="1000" x="0" y="0">
-          <input v-for="line in lines"  v-model.cNumber="line.value" :type="line.visibility" :style="{position:'absolute',left:(line.x1+line.x2)/2,top:(line.y1+line.y2)/2}"class="example"@click.stop @input="addValue(line.value,line)">
+          <input v-for="line in networks"  v-model.cNumber="line.value" :type="line.visibility" :style="{position:'absolute',left:(line.x1+line.x2)/2,top:(line.y1+line.y2)/2}"class="example"@click.stop @input="addValue(line.value,line)">
         </foreignObject>
-        <text v-for="(line,index) in lines":x="(line.x1+line.x2)/2+40"  :y="(line.y1+line.y2)/2+13 ":length="2":visibility="line.visibility" @click.stop>ms</text> 
+        <text v-for="(line,index) in networks":x="(line.x1+line.x2)/2+40"  :y="(line.y1+line.y2)/2+13 ":length="2":visibility="line.visibility" @click.stop>ms</text> 
         <line v-for="network in networks":x1="network.x1":x2="network.x2":y1="network.y1":y2="network.y2"stroke="red"/>
         <circle v-for="(bridge,index) in bridges":cx="bridge.cx" :cy="bridge.cy" :r="bridge.r" :stroke="bridge.stroke" stroke-width="5" fill="white"@click.right.stop.prevent="removeBridge(index)" @click.stop.left="drawLine(index,$event)"/>
         <text v-for="(bridge,index) in bridges":x="bridge.cx-35"  :y="bridge.cy+5 ":length="2":visibility="bridge.visibility"@click.stop>ブリッジ</text> 
