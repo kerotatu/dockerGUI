@@ -8,9 +8,9 @@
  <div id="container">
       <svg width="1000px" height="1000px"  background-image: none @click.left="append" @click.right.prevent="appendBridge">
         <foreignObject width="1000" height="1000" x="0" y="0">
-          <input v-for="line in networks"  v-model.cNumber="line.value" :type="line.visibility" :style="{position:'absolute',left:(line.x1+line.x2)/2,top:(line.y1+line.y2)/2}"class="example"@click.stop @input="addValue(line.value,line)">
+          <input v-for="line in lines"  v-model.cNumber="line.value" :type="line.visibility" :style="{position:'absolute',left:(line.x1+line.x2)/2,top:(line.y1+line.y2)/2}"class="example"@click.stop @input="addValue(line.value,line)">
         </foreignObject>
-        <text v-for="(line,index) in networks":x="(line.x1+line.x2)/2+40"  :y="(line.y1+line.y2)/2+13 ":length="2":visibility="line.visibility" @click.stop>ms</text> 
+        <text v-for="(line,index) in lines":x="(line.x1+line.x2)/2+40"  :y="(line.y1+line.y2)/2+13 ":length="2":visibility="line.visibility" @click.stop>ms</text> 
         <line v-for="network in networks":x1="network.x1":x2="network.x2":y1="network.y1":y2="network.y2"stroke="red"/>
         <circle v-for="(bridge,index) in bridges":cx="bridge.cx" :cy="bridge.cy" :r="bridge.r" :stroke="bridge.stroke" stroke-width="5" fill="white"@click.right.stop.prevent="removeBridge(index)" @click.stop.left="drawLine(index,$event)"/>
         <text v-for="(bridge,index) in bridges":x="bridge.cx-35"  :y="bridge.cy+5 ":length="2":visibility="bridge.visibility"@click.stop>ブリッジ</text> 
@@ -85,6 +85,7 @@
       },
       remove:function(index){
         let dlIndex=0
+        //this.containers.splice(index,1)
         this.containers[index]={
           x:0,
           y:0, 
@@ -130,6 +131,8 @@
             break
           }
           this.networks.splice(dlIndex,1)
+          //dlIndex=this.relation.findIndex(({ container }) => container === index)
+          //this.relation.splice(dlIndex,1)
           this.networkIndex--
         }
 
@@ -138,7 +141,17 @@
       removeBridge:function(index){
         let dlIndex=0
         this.bridges.splice(index,1)
-
+        //while(dlIndex!=-1){
+          //console.log("dl="+dlIndex+"index="+index)
+          //dlIndex=this.networks.findIndex(({ container }) => container === index)
+          //if(dlIndex==-1){
+          //  break
+          //}
+          //this.networks.splice(dlIndex,1)
+          //dlIndex=this.relation.findIndex(({ container }) => container === index)
+          //this.relation.splice(dlIndex,1)
+          //this.networkIndex--
+        //}
         dlIndex=0
         while(dlIndex!=-1){
           console.log("num2"+"dl="+dlIndex+"index="+index)
@@ -147,6 +160,7 @@
             break
           }
           this.networks.splice(dlIndex,1)
+          //dlIndex=this.relation.findIndex(({ bridge }) => bridge === index)
           this.relation.splice(dlIndex,1)
           this.networkIndex--
         }
@@ -178,7 +192,7 @@
                   y2:this.tmpy=this.containers[clickedIndex]["y"],
                   bridge:this.preClickedIndex,
                   container:clickedIndex,
-                  value:0,
+                  value:null,
                   visibility:"visible"
 
                 }
@@ -194,7 +208,7 @@
                 y2:this.tmpy=this.bridges[clickedIndex]["cy"],
                 bridge:clickedIndex,
                 container:this.preClickedIndex,
-                value:0
+                value:null
               })
               this.containers[this.preClickedIndex]["stroke"]="black"
               this.networkIndex++
@@ -265,16 +279,24 @@
         console.log(response);
       }).catch(function (error) {
           console.log(error);
-      });   
+      });
+
+      axios.post('http://127.0.0.1:12345/postLines',this.lines)
+      .then(function (response) {
+        console.log(response);
+      }).catch(function (error) {
+          console.log(error);
+      });
+      
     },
    }
    }).mount("#container")
    </script>
  <style> 
   .example{
-    width: 3em;
-    max-width: 100%;
-    border: none;
+     /*コレ*/width: 3em;
+    /*コレ*/max-width: 100%;
+    /*コレ*/border: none;
     background: #e7edf8;
 }
   svg{

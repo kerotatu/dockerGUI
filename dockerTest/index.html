@@ -13,9 +13,8 @@
         <text v-for="(line,index) in lines":x="(line.x1+line.x2)/2+40"  :y="(line.y1+line.y2)/2+13 ":length="2":visibility="line.visibility" @click.stop>ms</text> 
         <line v-for="network in networks":x1="network.x1":x2="network.x2":y1="network.y1":y2="network.y2"stroke="red"/>
         <circle v-for="(bridge,index) in bridges":cx="bridge.cx" :cy="bridge.cy" :r="bridge.r" :stroke="bridge.stroke" stroke-width="5" fill="white"@click.right.stop.prevent="removeBridge(index)" @click.stop.left="drawLine(index,$event)"/>
-        <text v-for="(bridge,index) in bridges":x="bridge.cx-35"  :y="bridge.cy+5 ":length="2":visibility="bridge.visibility"@click.stop>ブリッジ</text> 
-        <text v-for="(bridge,index) in bridges":x="bridge.cx-15"  :y="bridge.cy+20 ":length="2":visibility="bridge.visibility"@click.stop>#{{bridge.id}}</text> 
-        <line v-for="line in lines":x1="line.x1+35":x2="line.x2+35":y1="line.y1+25":y2="line.y2+25"stroke="gray"stroke-dasharray="6"/>
+        <text v-for="(bridge,index) in bridges":x="bridge.cx-35"  :y="bridge.cy+5 ":length="2":visibility="bridge.visibility"@click.stop>ブリッジ{{bridge.id}}</text> 
+        <line v-for="line in lines":x1="line.x1+35":x2="line.x2+35":y1="line.y1+25":y2="line.y2+25"stroke="black"/>
         <rect v-for="(rect,index) in containers":x="rect.x" :y="rect.y" :width="rect.width":height="rect.height" :stroke="rect.stroke" stroke-width="5" fill="white" rx="5" ry="5"@click.right.stop.prevent="remove(index)" @click.stop.left="drawLine(index,$event)"/>
         <text v-for="(rect,index) in containers":x="rect.x+2"  :y="rect.y+rect.height-20 ":length="2":visibility="rect.visibility" @click.stop>コンテナ{{rect.id}}</text>     
       </svg>    
@@ -97,7 +96,23 @@
         }
         this.dlCnt++
         this.lines[0]["dl"]=this.dlCnt
+        //this.containers[index] = Object.assign({}, this.containers[index], 
 
+        //var job=
+        //{ 
+          //x:0,
+          //y:0, 
+          //width:0,
+          //height:0,
+          //id:-1,
+          //stroke:"white"
+        //}
+        //this.$set(this.containers[index],'x',0)
+        //this.$set(this.containers[index],'y',0)
+        //this.$set(this.containers[index],'width',0)
+        //this.$set(this.containers[index],'height',0)
+        //this.$set(this.containers[index],'id',-1)
+        //this.$set(this.containers[index],'stroke',"white")
         while(dlIndex!=-1){
           dlIndex=this.lines.findIndex(({ to }) => to === index)
           if(dlIndex==-1){
@@ -141,20 +156,20 @@
       removeBridge:function(index){
         let dlIndex=0
         this.bridges.splice(index,1)
-        //while(dlIndex!=-1){
-          //console.log("dl="+dlIndex+"index="+index)
-          //dlIndex=this.networks.findIndex(({ container }) => container === index)
-          //if(dlIndex==-1){
-          //  break
-          //}
-          //this.networks.splice(dlIndex,1)
+        while(dlIndex!=-1){
+          console.log("dl="+dlIndex+"index="+index)
+          dlIndex=this.networks.findIndex(({ container }) => container === index)
+          if(dlIndex==-1){
+            break
+          }
+          this.networks.splice(dlIndex,1)
           //dlIndex=this.relation.findIndex(({ container }) => container === index)
           //this.relation.splice(dlIndex,1)
-          //this.networkIndex--
-        //}
+          this.networkIndex--
+        }
         dlIndex=0
         while(dlIndex!=-1){
-          console.log("num2"+"dl="+dlIndex+"index="+index)
+          console.log("dl="+dlIndex+"index="+index)
           dlIndex=this.networks.findIndex(({ bridge }) => bridge === index)
           if(dlIndex==-1){
             break
@@ -299,7 +314,4 @@
     /*コレ*/border: none;
     background: #e7edf8;
 }
-  svg{
-    background-color: #BCE1DF;
-  }
  </style>
