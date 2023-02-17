@@ -46,12 +46,12 @@ def postNetworks():
     delay.remove(0)
     networkName.remove(0)
     for e in networkName:
-        tmp="docker network create --driver=bridge --subnet 172.16.{}.0/24 --gateway 172.16.{}.254 netLabTestNet{}".format(24+cnt,24+cnt,e)
+        tmp="docker network create --driver=bridge --subnet 172.16.{}.0/24 --gateway 172.16.{}.254 testnet{}".format(24+cnt,24+cnt,e)
         cnt=cnt+1
         subprocess.run(tmp,shell=True)
     obj.pop(0)
     for e in obj:
-        tmp="docker run -d -it --privileged --name testcon{} --net netLabTestNet{} --ip 172.16.{}.{} -e PASSWORD=1234  ubuntu:20.04".format(e["container"],e["bridge"],23+e["bridge"],ipCount[int(e["bridge"])]+1)
+        tmp="docker run -d -it --privileged --name testcon{} --net testnet{} --ip 172.16.{}.{} -e PASSWORD=1234  netemtest01".format(e["container"],e["bridge"],23+e["bridge"],ipCount[int(e["bridge"])]+1)
         ipCount[int(e["bridge"])]+=1
         subprocess.run(tmp,shell=True)
         
@@ -80,7 +80,7 @@ def postNetworks():
 
         for i in range(cnt+1,len(obj)):
             if(e["bridge"]==obj[i]["bridge"]):
-                cmd="tc qdisc add dev eth0 parent 1:{} handle {}: netem delay {}ms".format(ip,10+ip,int(e["value"])+int(obj[i]["value"]))
+                cmd="tc qdisc add dev eth0 parent 1:{} handle {}: netem delay {}ms".format(Address4[i],10+Address4[i],int(e["value"])+int(obj[i]["value"]))
                 container.exec_run(cmd)
                 print(cmd)
                 cmd="tc filter add dev eth0 protocol ip parent 1: prio {} u32 match ip dst 172.16.{}.{}/32 flowid 1:{}".format(ip,23+e["bridge"],Address4[i],Address4[i])
@@ -101,4 +101,4 @@ def postTestJson():
     app.logger.debug(jsonObj)
     return "aaa"+jsonObj
 
-app.run(port=12345, debug=True)
+app.run(host='0.0.0.0',port=12345, debug=True)

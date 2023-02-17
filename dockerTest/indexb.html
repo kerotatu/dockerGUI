@@ -19,9 +19,7 @@
         <rect v-for="(rect,index) in containers":x="rect.x" :y="rect.y" :width="rect.width":height="rect.height" :stroke="rect.stroke" stroke-width="5" fill="white" rx="5" ry="5"@click.right.stop.prevent="remove(index)" @click.stop.left="drawLine(index,$event)"/>
         <text v-for="(rect,index) in containers":x="rect.x+2"  :y="rect.y+rect.height-20 ":length="2":visibility="rect.visibility" @click.stop>コンテナ{{rect.id}}</text>     
       </svg>    
-      <button @click="dlCSV">
-        ダウンロード
-      </button>
+
       <button @click="postTest">送信</button>
   </div>
 </body>
@@ -260,7 +258,7 @@
     },
     postTest: function(){
 
-      axios.post('http://127.0.0.1:12345/postNetworks',this.networks)
+      axios.post('http://172.16.24.1:12345/postNetworks',this.networks)
       .then(function (response) {
         console.log(response);
       }).catch(function (error) {
