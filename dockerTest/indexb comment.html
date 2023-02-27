@@ -1,0 +1,316 @@
+<!-- わからないことはtwitter kerotatuまで　忙しかったり普通にわからなかったりするかも-->
+<!--Vue の@clickとかの仕様は調べてください stopとか色々あります-->
+<html>
+  <head>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-context-menu@2.0.6/vue-context-menu.min.js"></script>
+  </head>
+  <body>
+ <div id="container">
+      <svg width="1000px" height="1000px"  background-image: none @click.left="append" @click.right.prevent="appendBridge">
+        <!--svgの描画領域内だと普通のタグが使えないからforeignObjectタグを使ってinputを描画-->
+        <foreignObject width="1000" height="1000" x="0" y="0">
+          <input v-for="line in networks"  v-model.cNumber="line.value" :type="line.visibility" :style="{position:'absolute',left:(line.x1+line.x2)/2,top:(line.y1+line.y2)/2}"class="example"@click.stop @input="addValue(line.value,line)">
+        </foreignObject>
+        <!--msの描画-->
+        <text v-for="(line,index) in networks":x="(line.x1+line.x2)/2+40"  :y="(line.y1+line.y2)/2+13 ":length="2":visibility="line.visibility" @click.stop>ms</text> 
+        <!--ネットワーク線の描画-->
+        <line v-for="network in networks":x1="network.x1":x2="network.x2":y1="network.y1":y2="network.y2"stroke="red"/>
+        <!--ブリッジの描画右クリックで消したりできる-->
+        <circle v-for="(bridge,index) in bridges":cx="bridge.cx" :cy="bridge.cy" :r="bridge.r" :stroke="bridge.stroke" stroke-width="5" fill="white"@click.right.stop.prevent="removeBridge(index)" @click.stop.left="drawLine(index,$event)"/>
+        <!--ブリッジという文字の描画-->
+        <text v-for="(bridge,index) in bridges":x="bridge.cx-35"  :y="bridge.cy+5 ":length="2":visibility="bridge.visibility"@click.stop>ブリッジ</text> 
+        <!--ブリッジidの描画-->
+        <text v-for="(bridge,index) in bridges":x="bridge.cx-15"  :y="bridge.cy+20 ":length="2":visibility="bridge.visibility"@click.stop>#{{bridge.id}}</text> 
+        <!--昔の名残　コンテナ同士をつなげれる(使わない)-->
+        <line v-for="line in lines":x1="line.x1+35":x2="line.x2+35":y1="line.y1+25":y2="line.y2+25"stroke="gray"stroke-dasharray="6"/>
+        <!--コンテナの描画-->
+        <rect v-for="(rect,index) in containers":x="rect.x" :y="rect.y" :width="rect.width":height="rect.height" :stroke="rect.stroke" stroke-width="5" fill="white" rx="5" ry="5"@click.right.stop.prevent="remove(index)" @click.stop.left="drawLine(index,$event)"/>
+        <!--コンテナという文字の描画-->
+        <text v-for="(rect,index) in containers":x="rect.x+2"  :y="rect.y+rect.height-20 ":length="2":visibility="rect.visibility" @click.stop>コンテナ{{rect.id}}</text>     
+      </svg>    
+      <!--送信ボタンの描画-->
+      <button @click="postTest">送信</button>
+  </div>
+</body>
+</html>
+<script>
+  const { createApp } = Vue
+   createApp({
+    data() {
+      return {
+        //めちゃめちゃグローバルに宣言してるけど仕様を知らなかった時の名残のやつもたくさんあります・・・
+        //コンテナの数を数える
+        cNum:1,
+        //ブリッジの数を数える
+        bNum:1,
+        //１回目のクリックかどうかのflag ブリッジとコンテナをつなぐときに、1回目ならマークを付けて2回目ならマークされたところにつなげるために使用
+        firstClick:true,
+        //前にクリックされたタグがrect(コンテナ)なのかcircle(ブリッジ)なのかの判定に使用しているが今は多分意味ない
+        preClickedTag:"",
+        //前にクリックされたオブジェクトのインデックスを格納している　こっちは意味がある　
+        preClickedIndex:-1,
+        //使ってない
+        changeIndex:0,
+        //昔の名残　使えることもあるかも コンテナ同士をつなげているlineの個数を数えている
+        lineIndex:0,
+        //コンテナとブリッジを繋げているネットワークの個数を数えている
+        networkIndex:0,
+        //idの管理
+        id:0,
+        //x座標の管理
+        tmpx:0,
+        //y座標の管理
+        tmpy:0,
+        //valueの管理　遅延値
+        value:0,
+        //clickされたBridgeの管理　初期値は適当
+        clickedBridge:-1,
+        //昔の名残
+        dlCnt:0,
+        containers : [
+           {x:0, y:0, width:0,height:0,id:0,stroke:"black",visibility:"hidden"}
+        ],
+        lines :[
+          {x1:0, x2:0, y1:0, y2:0, pathLength:0,from:0 ,to:0,value:0,dl:0,visibility:"hidden",display:"none"}
+        ],
+        bridges : [
+           {cx:0, cy:0, r:0,id:0,stroke:"black",visibility:"hidden"}
+        ],
+        relation:[
+          {from:"" ,to:"" ,value:0}
+        ],
+        networks:[
+          {x1:0, x2:0, y1:0, y2:0, pathLength:0,bridge:0 ,container:0,value:0,visibility:"hidden"}
+        ],
+      }
+    },
+    methods: {
+      //クリックされた座標のデータをcontainersに追加するメソッドこれによりhtml部の奴によってコンテナが描画される
+      append:function(e){
+        this.containers.push({
+          x : e.offsetX,
+          y : e.offsetY,
+          width  : 80,
+          height : 50,
+          id : this.cNum++,
+          stroke:"black",
+          visibility:"visible"
+        });
+      },
+      //bridgesに追加するメソッド　同上
+      appendBridge:function(e){
+        this.bridges.push({
+          cx : e.offsetX,
+          cy : e.offsetY,
+          r  : 50,
+          id : this.bNum++,
+          stroke:"black"
+        });
+      },
+      //コンテナを削除するメソッド
+      remove:function(index){
+        let dlIndex=0
+        this.containers[index]={
+          x:0,
+          y:0, 
+          width:0,
+          height:0,
+          id:-1,
+          stroke:"white",
+          visibility:"visible"
+        }
+        this.dlCnt++
+        this.lines[0]["dl"]=this.dlCnt
+
+        while(dlIndex!=-1){
+          dlIndex=this.lines.findIndex(({ to }) => to === index)
+          if(dlIndex==-1){
+            break
+          }
+          this.lines.splice(dlIndex,1)
+          
+          
+          dlIndex=this.relation.findIndex(({ to }) => to === index)
+          this.relation.splice(dlIndex,1)
+          this.lineIndex--
+        }
+        dlIndex=0
+        while(dlIndex!=-1){
+          dlIndex=this.lines.findIndex(({ from }) => from === index)
+          
+          if(dlIndex==-1){
+            break
+          }
+          this.lines.splice(dlIndex,1)
+          this.lines[0]["dl"]=this.dlCnt
+          dlIndex=this.relation.findIndex(({ from }) => from === index)
+          this.relation.splice(dlIndex,1)
+          this.lineIndex--
+        }
+        dlIndex=0
+        while(dlIndex!=-1){
+          console.log("dl="+dlIndex+"index="+index)
+          dlIndex=this.networks.findIndex(({ container }) => container === index)
+          if(dlIndex==-1){
+            break
+          }
+          this.networks.splice(dlIndex,1)
+          this.networkIndex--
+        }
+
+        console.log(index)
+      },
+      //Bridgeを削除するコマンド
+      removeBridge:function(index){
+        let dlIndex=0
+        this.bridges.splice(index,1)
+
+        dlIndex=0
+        while(dlIndex!=-1){
+          console.log("num2"+"dl="+dlIndex+"index="+index)
+          dlIndex=this.networks.findIndex(({ bridge }) => bridge === index)
+          if(dlIndex==-1){
+            break
+          }
+          this.networks.splice(dlIndex,1)
+          this.relation.splice(dlIndex,1)
+          this.networkIndex--
+        }
+      },
+      //ネットワーク線を描画するメソッド　networksの管理もする
+      drawLine:function(clickedIndex,event){
+        let clickedTag=event.target.tagName;
+        console.log(clickedTag);
+        if(clickedTag=="circle" || this.preClickedTag=="circle"){
+          if(this.firstClick){
+            this.preClickedTag="circle";
+            clickedBridge=clickedIndex;
+            this.bridges[clickedIndex]["stroke"]="blue"
+            this.tmpx=this.bridges[clickedIndex]["cx"]
+            this.tmpy=this.bridges[clickedIndex]["cy"]
+            this.firstClick=false
+            this.preClickedIndex=clickedIndex
+          }else{
+            if(this.preClickedTag=="circle"&&clickedTag=="circle"){
+              console.log("BridgeとBridgeをつなげようとしています。");
+              firstClick=true;
+              return;
+            }else{
+              if(this.preClickedTag=="circle"&&clickedTag=="rect"){
+                console.log("push net")
+                this.networks.push({
+                  x1:this.tmpx,
+                  x2:this.containers[clickedIndex]["x"],
+                  y1:this.tmpy,
+                  y2:this.tmpy=this.containers[clickedIndex]["y"],
+                  bridge:this.preClickedIndex,
+                  container:clickedIndex,
+                  value:0,
+                  visibility:"visible"
+
+                }
+              )
+              this.networkIndex++
+              this.bridges[this.preClickedIndex]["stroke"]="black"
+            }else{
+              console.log("push net2")
+              this.networks.push({
+                x1:this.tmpx,
+                x2:this.bridges[clickedIndex]["cx"],
+                y1:this.tmpy,
+                y2:this.tmpy=this.bridges[clickedIndex]["cy"],
+                bridge:clickedIndex,
+                container:this.preClickedIndex,
+                value:0
+              })
+              this.containers[this.preClickedIndex]["stroke"]="black"
+              this.networkIndex++
+            }
+            this.preClickedTag=""
+            this.firstClick=true
+            
+            }
+          }
+          
+        }
+        else if(this.firstClick){
+          preClickedTag="rect";
+          this.containers[clickedIndex]["stroke"]="blue"
+          this.relation.push({
+            from:clickedIndex,
+            to:null,
+            value:null
+          }
+        )
+        console.log("push")
+        this.tmpx=this.containers[clickedIndex]["x"]
+        this.tmpy=this.containers[clickedIndex]["y"]
+        this.firstClick=false
+        this.preClickedIndex=clickedIndex
+      }else{
+
+        this.relation[this.lineIndex+1]["to"]=clickedIndex
+        this.lines.push({
+          x1:this.tmpx,
+          x2:this.containers[clickedIndex]["x"],
+          y1:this.tmpy,
+          y2:this.tmpy=this.containers[clickedIndex]["y"],
+          from:this.preClickedIndex,
+          to:clickedIndex,
+          value:this.value,
+          visibility:"visible"
+        })
+        this.firstClick=true
+        this.lineIndex++
+        this.containers[this.preClickedIndex]["stroke"]="black"
+        console.log("a")
+        
+      }
+
+      },
+      //テスト用メソッド
+      addValue: function(value,lines){
+        console.log(value);
+        console.log(this.value);
+        console.log(lines);
+      },
+      //昔の名残　ボタンを作ればcsvダウンロードができる
+      dlCSV () {
+      var csv = '\ufeff' + 'from,to\n'
+      this.relation.forEach(el => {
+        var line = el['from'] + ',' + el['to'] + '\n'
+        csv += line
+      })
+      let blob = new Blob([csv], { type: 'text/csv' })
+      let link = document.createElement('a')
+      link.href = window.URL.createObjectURL(blob)
+      link.download = 'Result.csv'
+      link.click()
+    },
+    //Testとか書いてあるけど普通に本番用　指定したurlにpost送信する
+    postTest: function(){
+
+      axios.post('http://172.16.24.1:12345/postNetworks',this.networks)
+      .then(function (response) {
+        console.log(response);
+      }).catch(function (error) {
+          console.log(error);
+      });   
+    },
+   }
+   }).mount("#container")
+   </script>
+ <style> 
+ /*inputタグの周りを消している*/
+  .example{
+    width: 3em;
+    max-width: 100%;
+    border: none;
+    background: #e7edf8;
+}
+  svg{
+    background-color: #BCE1DF;
+  }
+ </style>
